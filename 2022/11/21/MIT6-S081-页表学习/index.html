@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>邶邶岸 || </title>
+    <title>邶邶岸 || MIT6.S081  页表学习</title>
     <meta name="author" content="Beibei">
     <meta name="description" content="忽有故人心上过，回首山河已是秋 ">
     <meta name="keywords" content=" ">
@@ -165,57 +165,46 @@
                 </div>
 
                 <div id="main">
-                    
-<div id="archives">
-    
-    <a-timeline>
-        <a-timeline-item timestamp="2022/11/21" placement="top" color="#a5c2f5">
-            <a-card hoverable>
-                <div class="item-time">2022/11/21</div>
-                <a href="/2022/11/21/MIT6-S081-页表学习/">
-                    <h3>MIT6.S081  页表学习</h3>
-                </a>
-                <div class="info">
-                    
+                     
+<link rel="stylesheet" href="/css/post-body.css">
+<div class="article">
+    <div>
+        <h1>MIT6.S081  页表学习 </h1>
+    </div>
+    <div class="info">
+        <span class="date">
+            <span class="icon">
+                <a-icon type="calendar" theme="filled" />
+            </span>
+            2022/11/21
+        </span>
 
-                    
-                </div>
-            </a-card>
-        </a-timeline-item>
-    </a-timeline>
-    
-    <a-timeline>
-        <a-timeline-item timestamp="2022/11/20" placement="top" color="#a5c2f5">
-            <a-card hoverable>
-                <div class="item-time">2022/11/20</div>
-                <a href="/2022/11/20/欢迎来到我的博客/">
-                    <h3>欢迎来到我的博客</h3>
-                </a>
-                <div class="info">
-                    
+        
 
-                    
-                    <span class="tags">
-                        <span class="icon">
-                            <a-icon type="tags" />
-                        </span>
-                        
-                        <span class="tag">
-                            
-                            <a href="/tags/初态" style=color:#00bcd4>
-                                初态
-                            </a>
-                        </span>
-                        
-                    </span>
-                    
-                </div>
-            </a-card>
-        </a-timeline-item>
-    </a-timeline>
+        
+    </div>
+
+    <div class="content" v-pre>
+        <p><strong>页表的基本概念</strong></p>
+<p>页表（PageTable）是在硬件中通过处理器和内存管理单元(Memory Management Unit)实现的<br>寄存器中存取的为虚拟内存地址，带有地址的指令，其地址也指向虚拟内存地址。地址进入寄存器后会被转到内存管理单元，后备翻译为物理地址<br>从CPU的角度来说，一旦MMU打开了，它执行的每条指令中的地址都是虚拟内存地址。<br>页表(page table）只是保存在内存中，内存管理单元（MMU）只是会查看page table，并不会保存page table。<br><strong>页表与应用程序的关系</strong><br>每个应用程序都有自己独立的表单，并且这个表单定义了应用程序的地址空间。所以当操作系统将CPU从一个应用程序切换到另一个应用程序时，同时也需要切换SATP寄存器中的内容，从而指向新的进程保存在物理内存中的地址对应表单。</p>
+<h2 id="在RISC-V中的工作内容"><a href="#在RISC-V中的工作内容" class="headerlink" title="在RISC-V中的工作内容"></a>在RISC-V中的工作内容</h2><pre><code>   第一步：不要为每个地址创建一条表单条目，而是为每个page创建一条表单条目，所以每一次地址翻译都是针对一个page。而RISC-V中，一个page是4KB，也就是4096Bytes。这个大小非常常见，几乎所有的处理器都使用4KB大小的page或者支持4KB大小的page。现在，内存地址的翻译方式略微的不同了。首先对于虚拟内存地址，我们将它划分为两个部分，index和offset，index用来查找page，offset对应的是一个page中的哪个字节。
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://res.cloudinary.com/dsv1se5gr/image/upload/v1669042869/assets_2F-MHZoT2b_bcLghjAOPsJ_2F-MKKjB2an4WcuUmOlE___2F-MKOuJGerr5ySb7SLihT_2Fimage_h00y7m.png"><img src="https://res.cloudinary.com/dsv1se5gr/image/upload/v1669042869/assets_2F-MHZoT2b_bcLghjAOPsJ_2F-MKKjB2an4WcuUmOlE___2F-MKOuJGerr5ySb7SLihT_2Fimage_h00y7m.png"></a></p>
+<blockquote>
+<p>物理内存地址是56bit，其中44bit是物理page号（PPN，Physical Page Number），剩下12bit是offset完全继承自虚拟内存地址（也就是地址转换时，只需要将虚拟内存中的27bit翻译成物理内存中的44bit的page号，剩下的12bitoffset直接拷贝过来即可）。在物理地址中一个page有连续的4096个字节，即物理内存是以4096为粒度<br><a target="_blank" rel="noopener" href="https://res.cloudinary.com/dsv1se5gr/image/upload/v1669045351/assets_2F-MHZoT2b_bcLghjAOPsJ_2F-MKKjB2an4WcuUmOlE___2F-MKPwJezGQDkWaLDRuDs_2Fimage_ccub2h.png"><img src="https://res.cloudinary.com/dsv1se5gr/image/upload/v1669045351/assets_2F-MHZoT2b_bcLghjAOPsJ_2F-MKKjB2an4WcuUmOlE___2F-MKPwJezGQDkWaLDRuDs_2Fimage_ccub2h.png"></a><br>虚拟内存地址中的27bit的index，实际上是由3个9bit的数字组成（L2，L1，L0）。前9个bit被用来索引最高级的page directory（注：通常page directory是用来索引page table或者其他page directory物理地址的表单，但是在课程中，page table，page directory， page directory table区分并不明显，可以都认为是有相同结构的地址对应表单）<br>       一个directory是4096Bytes，就跟page的大小是一样的。Directory中的一个条目被称为PTE（Page Table Entry）是64bits，就像寄存器的大小一样，也就是8Bytes。所以一个Directory page有512个条目。<br><strong>三级page directory</strong></p>
+</blockquote>
+<p>所以实际上，SATP寄存器会指向最高一级的page directory的物理内存地址，之后我们用虚拟内存中index的高9bit用来索引最高一级的page directory，这样我们就能得到一个PPN，也就是物理page号。这个PPN指向了中间级的page directory。<br>当我们在使用中间级的page directory时，我们通过虚拟内存地址中的L1部分完成索引。接下来会走到最低级的page directory，我们通过虚拟内存地址中的L0部分完成索引。在最低级的page directory中，我们可以得到对应于虚拟内存地址的物理内存地址。</p>
+
+    </div>
+
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <div id="comment">
+        <div id="gitalk-container">
+        </div>
+    </div>
     
 </div>
-
                      
 <footer id="footer">
     <div class="footer-wrap">
@@ -278,6 +267,21 @@
             }
         }
     })
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script>
+    const gitalk = new Gitalk({
+        clientID: '6326e5faad8a7ab27d36# GitHub Application Client ID',
+        clientSecret: '9dfc5c7d54ec957604c8b781b29f19e34335a185# GitHub Application Client Secret',
+        repo: 'hexo-theme-particle',      // The repository of store comments,
+        owner: 'zim2000',
+        admin: ['zim2000'],
+        language: 'zh-CN',
+        id: location.pathname,      // Ensure uniqueness and length less than 50
+        distractionFreeMode: true  // Facebook-like distraction free mode
+    })
+    gitalk.render('gitalk-container')
 </script>
 
 </body>
